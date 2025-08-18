@@ -1,2 +1,4 @@
 src/*.o
-libft_printf.a
+libftprintf.a
+tests/*.o
+test_runner
