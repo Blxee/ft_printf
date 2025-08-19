@@ -1,6 +1,12 @@
-#include <stdio.h>
+#include "ft_printf.h"
 
-void sayhi(void)
+int ft_printf(char *format, ...)
 {
-	printf("Hello, World!\n");
+	va_list args;
+
+	va_start(args, format);
+	va_arg(args, char);
+	ft_putstr(format);
+	va_end(args);
+	return (0);
 }

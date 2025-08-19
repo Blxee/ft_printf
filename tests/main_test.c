@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	sayhi();
+	ft_printf("Hello, World!");
 	return (0);
 }
