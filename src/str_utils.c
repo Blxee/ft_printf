@@ -20,6 +20,11 @@ void ft_putstr(char *str)
 	write(STDOUT_FILENO, str, ft_strlen(str));
 }
 
+void ft_putnstr(char *str, int n)
+{
+	write(STDOUT_FILENO, str, n);
+}
+
 void ft_putnbr(long long nbr)
 {
 

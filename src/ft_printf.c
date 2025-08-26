@@ -1,24 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: atahiri- <atahiri-@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/24 23:23:27 by atahiri-          #+#    #+#             */
+/*   Updated: 2025/08/26 15:11:30 by atahiri-         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
-
-int ft_count_tokens(char *str)
-{
-	int count;
-	int i;
-
-	count = 0;
-	i = 0;
-	while (str[i])
-	{
-		if (str[i] == '%')
-			count++;
-		if (str[i + 1] == '%')
-			i++;
-		i++;
-	}
-	return (count);
-}
-
-t_token *ft_parse_conversion(char *str)
+/*
+t_token *ft_parse_conversion(char *str, int *offset)
 {
 	t_token *result;
 	static char *specifier_keys = "sSpdDioOuUxXcC";
@@ -32,50 +26,42 @@ t_token *ft_parse_conversion(char *str)
 		if (str[1] == specifier_keys[i])
 		{
 			result->specifier = specifier_values[i];
+			&offset += 2;
 			break ;
 		}
 		i++;
 	}
 	return (result);
 }
-
-t_token **ft_parse_tokens(char *str)
-{
-	t_token **result;
-	int count;
-	int i;
-	int j;
-
-	count = count_tokens(str);
-	result = malloc(sizeof(*result) * (count + 1));
-	i = 0;
-	j = 0;
-	while (i < count)
-	{
-		while (str[j] && str[j] != '%')
-		{
-			j++;
-		}
-		if (j > 0)
-		{
-			result[i] = ft_parse_conversion(str + i);
-			str[i + j] = '\0';
-		}
-		i++;
-	}
-	result
-}
+*/
 
 int ft_printf(char *format, ...)
 {
 	va_list args;
+	int i;
+	int j;
 
 	va_start(args, format);
-	ft_putstr(format);
-	int num1 = va_arg(args, int);
-	int num2 = va_arg(args, int);
-	ft_putnbr(num1);
-	ft_putnbr(num2);
+	i = 0;
+	while (format[i])
+	{
+		j = 0;
+		while (format[i + j] && format[i + j] != '%')
+			j++;
+		if (j > 0)
+		{
+			ft_putnstr(format + i, j);
+		}
+		if (format[i + j])
+		{
+			if (format[i + j + 1] == 's')
+				ft_putstr(va_arg(args, char *));
+			else if (format[i + j + 1] == 'd')
+				ft_putnbr(va_arg(args, int));
+			j += 2;
+		}
+		i += j;
+	}
 	va_end(args);
 	return (0);
 }

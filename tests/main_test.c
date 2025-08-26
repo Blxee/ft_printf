@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	ft_printf("Hello, World!", -123, 0);
+	ft_printf("Hello d:%d, World s:%s!", 123, "sup");
 	return (0);
 }
