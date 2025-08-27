@@ -6,6 +6,7 @@
 #include <stdarg.h>
 
 #include "str_utils.h"
+#include "mem_tracker.h"
 
 typedef enum e_specifier {
 	STRING,
