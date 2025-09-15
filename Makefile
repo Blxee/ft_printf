@@ -9,7 +9,7 @@ OBJS := $(SRCS:.c=.o)
 
 TEST_CFLAGS := -L . -l ftprintf
 TEST_DIR := tests
-TEST_NAME := test_runner
+TEST_NAME := test.out
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
 TEST_OBJS := $(TEST_SRCS:.c=.o)
 
@@ -24,6 +24,7 @@ $(TEST_NAME): $(NAME) $(TEST_OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+test: CFLAGS += -g
 test: $(TEST_NAME)
 	./$(TEST_NAME)
 
