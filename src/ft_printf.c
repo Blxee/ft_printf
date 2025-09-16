@@ -6,42 +6,21 @@
 /*   By: atahiri- <atahiri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 23:23:27 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:09:18 by blxee            ###   ########.fr       */
+/*   Updated: 2025/09/16 20:55:19 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
-/*
-t_token *ft_parse_conversion(char *str, int *offset)
-{
-	t_token *result;
-	static char *specifier_keys = "sSpdDioOuUxXcC";
-	static t_specifier specifier_values[] = {STRING, STRING, CHAR, CHAR, DECIMAL, DECIMAL};
-	int i;
-	
-	result = malloc(sizeof(*result));
-	i = 0;
-	while (specifier_keys[i])
-	{
-		if (str[1] == specifier_keys[i])
-		{
-			result->specifier = specifier_values[i];
-			&offset += 2;
-			break ;
-		}
-		i++;
-	}
-	return (result);
-}
-*/
 
 int ft_printf(char *format, ...)
 {
 	va_list args;
+	t_string *buffer;
 	int i;
 	int j;
 
 	va_start(args, format);
+	buffer = ft_str_create();
 	i = 0;
 	while (format[i])
 	{
@@ -50,18 +29,21 @@ int ft_printf(char *format, ...)
 			j++;
 		if (j > 0)
 		{
-			ft_putnstr(format + i, j);
+			ft_str_extend(buffer, format + i, j);
 		}
 		if (format[i + j])
 		{
+
 			if (format[i + j + 1] == 's')
-				ft_putstr(va_arg(args, char *));
-			else if (format[i + j + 1] == 'd')
-				ft_putnbr(va_arg(args, int));
+				ft_str_add_str(buffer, NULL, &args);
+			else if (format[i + j + 1] == 'c')
+				ft_str_add_char(buffer, NULL, &args);
 			j += 2;
 		}
 		i += j;
 	}
+	ft_putstr(buffer->str);
+	ft_str_free(&buffer);
 	va_end(args);
 	return (0);
 }

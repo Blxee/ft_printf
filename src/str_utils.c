@@ -1,6 +1,5 @@
 #include "ft_printf.h"
 
-
 t_string *ft_str_create(void)
 {
 	t_string *result;
@@ -18,16 +17,16 @@ t_string *ft_str_create(void)
 	return (result);
 }
 
-void ft_str_extend(t_string *const buf, const char *const str)
+void ft_str_extend(t_string *const buf, const char *const str, const int n)
 {
 	char *new_buf;
 	int i;
 	int j;
 
 	i = 0;
-	while (str[i])
+	while ((n == -1 || i < n) && str[i])
 	{
-		if (buf->capacity <= buf->length)
+		if (buf->capacity - 1 <= buf->length)
 		{
 			buf->capacity *= 2;
 			new_buf = mem_alloc(buf->capacity);
@@ -42,18 +41,19 @@ void ft_str_extend(t_string *const buf, const char *const str)
 		}
 		buf->str[buf->length++] = str[i++];
 	}
-	/* if (buf->length < buf->capacity) */
-	buf->str[buf->length++] = '\0';
+	buf->str[buf->length] = '\0';
 }
 
 void ft_str_add_char(t_string *const buf, t_format *format, va_list *list)
 {
-	ft_str_extend(buf, &(char){va_arg(*list, int)});
+	(void)format;
+	ft_str_extend(buf, &(char){va_arg(*list, int)}, -1);
 }
 
 void ft_str_add_str(t_string *const buf, t_format *format, va_list *list)
 {
-	ft_str_extend(buf, va_arg(*list, char *));
+	(void)format;
+	ft_str_extend(buf, va_arg(*list, char *), -1);
 }
 
 void ft_str_free(t_string **buf)
@@ -88,20 +88,18 @@ void ft_putnstr(char *str, int n)
 	write(STDOUT_FILENO, str, n);
 }
 
-void ft_putnbr(long long nbr)
+char *ft_itoa_base(unsigned long long nbr, int is_positive, unsigned int base, int upper)
 {
+	char *buf;
 
-	// if (nbr == -9223372036854775808)
-	// {
-	// 	ft_putstr("-9223372036854775808");
-	// 	return ;
-	// }
-	if (nbr < 0)
+	buf = mem_alloc(34);
+
+	(void)base;
+	(void)upper;
+	if (is_positive)
 	{
 		ft_putchar('-');
 		nbr = -nbr;
 	}
-	if (nbr / 10 > 0)
-		ft_putnbr(nbr / 10);
-	ft_putchar(nbr % 10 + '0');
+	return buf;
 }
