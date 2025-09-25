@@ -6,7 +6,7 @@
 /*   By: atahiri- <atahiri-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 23:23:27 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/09/17 14:32:08 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/09/24 16:07:51 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,22 @@
 
 int ft_print_format(t_string *const buffer, const char *const format, va_list *const args)
 {
-	// mem_alloc(sizeof(t_format));
-	if (format[1] == 's')
-		ft_str_add_str(buffer, NULL, args);
-	else if (format[1] == 'c')
-		ft_str_add_char(buffer, NULL, args);
+	static const char map_keys[] = { 's', 'c', 'd', 'x', 'o', 'b', 'f' };
+	static void (*const map_vals[])(t_string *const, t_format *, va_list *) = {
+		ft_str_add_str,
+		ft_str_add_char,
+	};
+	static const int map_len = 7;
+	t_format fmt;
+	int i;
 
+	i = 0;
+	while (i < map_len)
+	{
+		if (format[1] == map_keys[i])
+			map_vals[i](buffer, &fmt, args);
+		i++;
+	}
 	return (2);
 }
 
@@ -49,5 +59,6 @@ int ft_printf(char *format, ...)
 	ft_putstr(buffer->str);
 	ft_str_free(&buffer);
 	va_end(args);
+	mem_free_all();
 	return (0);
 }

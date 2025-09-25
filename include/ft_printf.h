@@ -6,7 +6,7 @@
 /*   By: blxee <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/06 16:12:18 by blxee             #+#    #+#             */
-/*   Updated: 2025/09/10 15:59:12 by blxee            ###   ########.fr       */
+/*   Updated: 2025/09/19 18:23:43 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,22 +45,21 @@ typedef enum e_length {
 
 typedef enum e_falg {
 	MINUS = '-',
-	PLUS = '+',
-	ZERO = '0',
+	PLUS  = '+',
+	ZERO  = '0',
 	SPACE = ' ',
-	HASH = '#',
+	HASH  = '#',
 }	t_flag;
 
 typedef struct s_format {
-	t_flag				flags[32];
+	t_flag			flags[32];
 	unsigned int	width;
 	unsigned int	precision;
-	t_length			length;
+	t_length		length;
 	t_specifier		specifier;
 }	t_format;
 
-int ft_count_tokens(char *str);
-t_format *ft_parse_tokens(char *str);
+int ft_print_format(t_string *const buffer, const char *const format, va_list *const args);
 int ft_printf(char *format, ...);
 
 #endif
