@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/23 08:52:23 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/23 09:24:34 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ static const t_handler	g_handlers[] = {
 	&ft_str_extend_str,
 	&ft_str_extend_pointer,
 	&ft_str_extend_decimal,
+	&ft_str_extend_decimal,
+	&ft_str_extend_unsigned,
 };
 
 int	ft_sprintf(char *str, const char *format, ...)
@@ -110,8 +112,8 @@ void	ft_str_extend_pointer(char *buf, t_fmt fmt, va_list *ap)
 
 void	ft_str_extend_decimal(char *buf, t_fmt fmt, va_list *ap)
 {
-	long	nbr;
-	char	*str;
+	long long	nbr;
+	char		*str;
 
 	nbr = 0;
 	if (BYTE == fmt.length)
@@ -120,6 +122,28 @@ void	ft_str_extend_decimal(char *buf, t_fmt fmt, va_list *ap)
 		nbr = va_arg(*ap, int);
 	if (INT == fmt.length)
 		nbr = va_arg(*ap, int);
+	// if (LONG == fmt.length)
+	// 	nbr = va_arg(*ap, long);
+	// if (LONG_LONG == fmt.length)
+	// 	nbr = va_arg(*ap, long long);
+
+	str = ft_itoa(nbr);
+	ft_strlcat(buf, str, 1024);
+	free(str);
+}
+
+void	ft_str_extend_unsigned(char *buf, t_fmt fmt, va_list *ap)
+{
+	unsigned long long	nbr;
+	char				*str;
+
+	nbr = 0;
+	if (BYTE == fmt.length)
+		nbr = va_arg(*ap, unsigned int);
+	if (SHORT == fmt.length)
+		nbr = va_arg(*ap, unsigned int);
+	// if (INT == fmt.length)
+	// 	nbr = va_arg(*ap, unsigned int);
 	// if (LONG == fmt.length)
 	// 	nbr = va_arg(*ap, long);
 	// if (LONG_LONG == fmt.length)

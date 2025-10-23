@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/23 08:51:02 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/23 09:23:15 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,5 +55,6 @@ void	ft_str_extend_char(char *buf, t_fmt fmt, va_list *ap);
 void	ft_str_extend_str(char *buf, t_fmt fmt, va_list *ap);
 void	ft_str_extend_pointer(char *buf, t_fmt fmt, va_list *ap);
 void	ft_str_extend_decimal(char *buf, t_fmt fmt, va_list *ap);
+void	ft_str_extend_unsigned(char *buf, t_fmt fmt, va_list *ap);
 
 #endif
