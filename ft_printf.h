@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 08:02:02 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 10:51:24 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@ typedef struct s_fmt {
 	t_handler handler;
 }	t_fmt;
 
-int		ft_dprintf(int fd, const char *format, ...);
 int		ft_printf(const char *format, ...);
+int		ft_dprintf(int fd, const char *format, ...);
+int		ft_inner_dprintf(int fd, const char *format, va_list *ap);
 
 void	ft_putnstr_fd(char *s, int fd, int n);
 t_fmt	ft_parse_fmt(char *str, int *offset);
