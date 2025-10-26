@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/24 18:10:46 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 08:02:02 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,5 +37,8 @@ int		ft_print_str(int fd, t_fmt fmt, va_list *ap);
 int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap);
 int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap);
 int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap);
+int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap);
+int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap);
+int		ft_print_percent(int fd, t_fmt fmt, va_list *ap);
 
 #endif

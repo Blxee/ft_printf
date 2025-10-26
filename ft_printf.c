@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/25 08:39:39 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 09:50:45 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,9 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 		&ft_print_decimal,
 		&ft_print_decimal,
 		&ft_print_unsigned,
+		&ft_print_hex_lower,
+		&ft_print_hex_upper,
+		&ft_print_percent,
 	};
 	t_fmt					fmt;
 	int						i;
@@ -94,15 +97,44 @@ int		ft_print_str(int fd, t_fmt fmt, va_list *ap)
 
 	(void)fmt;
 	str = va_arg(*ap, char *);
+	if (str == NULL)
+	{
+		ft_putstr_fd("(null)", fd);
+		return (6);
+	}
 	ft_putstr_fd(str, fd);
 	return (ft_strlen(str));
 }
 
+void	ft_puthexulong_fd(unsigned long n, int upper, int fd)
+{
+	static const char *const s_digits_lower = "0123456789abcdef";
+	static const char *const s_digits_upper = "0123456789ABCDEF";
+	const char *digits;
+
+	digits = s_digits_lower;
+	if (upper)
+		digits = s_digits_upper;
+	if (fd < 0)
+		return ;
+	if (n / 16 > 0)
+		ft_puthexulong_fd(n / 16, upper, fd);
+	write(fd, digits + n % 16, 1);
+}
+
 int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap)
 {
-	(void)fd;
+	void *p;
+
 	(void)fmt;
-	(void)ap;
+	p = va_arg(*ap, void *);
+	if (p == NULL)
+	{
+		ft_putstr_fd("(nil)", fd);
+		return (5);
+	}
+	ft_putstr_fd("0x", fd);
+	ft_puthexulong_fd((unsigned long)p, 0, fd);
 	return (-1);
 }
 
@@ -123,5 +155,33 @@ int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)
 	(void)fmt;
 	nbr = va_arg(*ap, unsigned int);
 	ft_putnbr_fd(nbr, fd);
+	return (-1);
+}
+
+int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap)
+{
+	unsigned int nbr;
+
+	(void)fmt;
+	nbr = va_arg(*ap, unsigned int);
+	ft_puthexulong_fd(nbr, 0, fd);
+	return (-1);
+}
+
+int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap)
+{
+	unsigned int nbr;
+
+	(void)fmt;
+	nbr = va_arg(*ap, unsigned int);
+	ft_puthexulong_fd(nbr, 1, fd);
+	return (-1);
+}
+
+int		ft_print_percent(int fd, t_fmt fmt, va_list *ap)
+{
+	(void)fmt;
+	(void)ap;
+	ft_putchar_fd('%', fd);
 	return (-1);
 }
