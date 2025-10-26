@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 10:51:24 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 11:58:41 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ typedef int	(*t_handler)(int fd, t_fmt, va_list *);
 typedef struct s_fmt {
 	// flags
 	// width
+	// precision
 	t_handler handler;
 }	t_fmt;
 
@@ -30,8 +31,10 @@ int		ft_printf(const char *format, ...);
 int		ft_dprintf(int fd, const char *format, ...);
 int		ft_inner_dprintf(int fd, const char *format, va_list *ap);
 
-void	ft_putnstr_fd(char *s, int fd, int n);
+int		ft_putnstr_fd(char *s, int fd, int n);
 t_fmt	ft_parse_fmt(char *str, int *offset);
+int		ft_puthex_fd(unsigned long n, int upper, int fd);
+int		ft_putlnbr_fd(long n, int fd);
 
 int		ft_print_char(int fd, t_fmt fmt, va_list *ap);
 int		ft_print_str(int fd, t_fmt fmt, va_list *ap);

@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 10:51:45 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 18:41:48 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,31 +31,41 @@ int		ft_inner_dprintf(int fd, const char *format, va_list *ap)
 	t_fmt	fmt;
 	int start;
 	int len;
+	int written;
 
-	if (format == NULL)
+	if (format == NULL || fd < 0)
 		return (-1);
+	written = 0;
 	start = 0;
 	len = 0;
 	while (format[start + len] != '\0')
 	{
 		if (format[start + len] == '%')
 		{
-			ft_putnstr_fd((char *)format + start, fd, len);
+			written += ft_putnstr_fd((char *)format + start, fd, len);
 			fmt = ft_parse_fmt((char *)format + start + len, &start);
-			fmt.handler(fd, fmt, ap);
+			written += fmt.handler(fd, fmt, ap);
 			start += len;
+			len = 0;
 		}
 		else
 			len++;
 	}
-	ft_putstr_fd((char *)format + start, fd);
+	written += ft_putnstr_fd((char *)format + start, fd, -1);
 	va_end(*ap);
-	return (0);
+	return (written);
 }
 
-void	ft_putnstr_fd(char *s, int fd, int n)
+int		ft_putnstr_fd(char *s, int fd, int n)
 {
-	write(fd, s, n);
+	int len;
+
+	len = (int)ft_strlen(s);
+	if (n < 0)
+		n = len;
+	else if (len < n)
+		n = len;
+	return (write(fd, s, n));
 }
 
 t_fmt	ft_parse_fmt(char *str, int *offset)
@@ -93,32 +103,16 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 	return (fmt);
 }
 
-int		ft_print_char(int fd, t_fmt fmt, va_list *ap)
+int		ft_putlnbr_fd(long n, int fd)
 {
-	char	chr;
-
-	(void)fmt;
-	chr = (char)va_arg(*ap, int);
-	ft_putchar_fd(chr, fd);
-	return (1);
+	if (n < 0)
+		return (write(fd, &(char){'-'}, 1) + ft_putlnbr_fd(-n, fd));
+	if (n / 10 > 0)
+		return (ft_putlnbr_fd(n / 10, fd) + write(fd, &(char){'0' + n % 10}, 1));
+	return (write(fd, &(char){'0' + n % 10}, 1));
 }
 
-int		ft_print_str(int fd, t_fmt fmt, va_list *ap)
-{
-	char	*str;
-
-	(void)fmt;
-	str = va_arg(*ap, char *);
-	if (str == NULL)
-	{
-		ft_putstr_fd("(null)", fd);
-		return (6);
-	}
-	ft_putstr_fd(str, fd);
-	return (ft_strlen(str));
-}
-
-void	ft_puthex_fd(unsigned long n, int upper, int fd)
+int		ft_puthex_fd(unsigned long n, int upper, int fd)
 {
 	static const char *const s_digits_lower = "0123456789abcdef";
 	static const char *const s_digits_upper = "0123456789ABCDEF";
@@ -127,27 +121,53 @@ void	ft_puthex_fd(unsigned long n, int upper, int fd)
 	digits = s_digits_lower;
 	if (upper)
 		digits = s_digits_upper;
-	if (fd < 0)
-		return ;
 	if (n / 16 > 0)
-		ft_puthex_fd(n / 16, upper, fd);
-	write(fd, digits + n % 16, 1);
+		return (ft_puthex_fd(n / 16, upper, fd) + write(fd, digits + n % 16, 1));
+	return (write(fd, digits + n % 16, 1));
+}
+
+int		ft_print_char(int fd, t_fmt fmt, va_list *ap)
+{
+	char	chr;
+
+	(void)fmt;
+	chr = (char)va_arg(*ap, int);
+	return (write(fd, &chr, 1));
+}
+
+int		ft_print_str(int fd, t_fmt fmt, va_list *ap)
+{
+	char	*str;
+	int written;
+
+	(void)fmt;
+	str = va_arg(*ap, char *);
+	written = 0;
+	if (str == NULL)
+	{
+		written = ft_putnstr_fd("(null)", fd, -1);
+		return (written);
+	}
+	written += ft_putnstr_fd(str, fd, -1);
+	return (written);
 }
 
 int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap)
 {
 	void *p;
+	int written;
 
 	(void)fmt;
 	p = va_arg(*ap, void *);
+	written = 0;
 	if (p == NULL)
 	{
-		ft_putstr_fd("(nil)", fd);
-		return (5);
+		written += ft_putnstr_fd("(nil)", fd, -1);
+		return (written);
 	}
-	ft_putstr_fd("0x", fd);
-	ft_puthex_fd((unsigned long)p, 0, fd);
-	return (-1);
+	written += ft_putnstr_fd("0x", fd, -1);
+	written += ft_puthex_fd((unsigned long)p, 0, fd);
+	return (written);
 }
 
 int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
@@ -156,8 +176,7 @@ int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 
 	(void)fmt;
 	nbr = va_arg(*ap, int);
-	ft_putnbr_fd(nbr, fd);
-	return (-1);
+	return (ft_putlnbr_fd(nbr, fd));
 }
 
 int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)
@@ -166,8 +185,7 @@ int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)
 
 	(void)fmt;
 	nbr = va_arg(*ap, unsigned int);
-	ft_putnbr_fd(nbr, fd);
-	return (-1);
+	return (ft_putlnbr_fd(nbr, fd));
 }
 
 int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap)
@@ -176,8 +194,7 @@ int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap)
 
 	(void)fmt;
 	nbr = va_arg(*ap, unsigned int);
-	ft_puthex_fd(nbr, 0, fd);
-	return (-1);
+	return (ft_puthex_fd(nbr, 0, fd));
 }
 
 int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap)
@@ -186,14 +203,12 @@ int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap)
 
 	(void)fmt;
 	nbr = va_arg(*ap, unsigned int);
-	ft_puthex_fd(nbr, 1, fd);
-	return (-1);
+	return (ft_puthex_fd(nbr, 1, fd));
 }
 
 int		ft_print_percent(int fd, t_fmt fmt, va_list *ap)
 {
 	(void)fmt;
 	(void)ap;
-	ft_putchar_fd('%', fd);
-	return (-1);
+	return (write(fd, &(char){'%'}, 1));
 }
