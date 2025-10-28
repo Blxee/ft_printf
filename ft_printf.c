@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 18:41:48 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/28 09:53:43 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ int		ft_putnstr_fd(char *s, int fd, int n)
 	return (write(fd, s, n));
 }
 
-t_fmt	ft_parse_fmt(char *str, int *offset)
+int ft_parse_specifier(t_fmt *fmt, char *str)
 {
 	static const char		*ident_keys = "cspdiuxX%";
 	static const t_handler	ident_vals[] = {
@@ -82,23 +82,98 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 		&ft_print_hex_upper,
 		&ft_print_percent,
 	};
-	t_fmt					fmt;
-	int						i;
-	int						off;
+	int i;
 
-	off = 1;
 	i = 0;
-	ft_bzero(&fmt, sizeof(fmt));
 	while (ident_keys[i] != '\0')
 	{
-		if (ident_keys[i] == str[off])
+		if (ident_keys[i] == *str)
 		{
-			fmt.handler = ident_vals[i];
+			fmt->handler = ident_vals[i];
 			break ;
 		}
 		i++;
 	}
-	off++;
+	return (1);
+}
+
+int ft_contains(const void *arr, const void *elem,
+				unsigned int elem_size, unsigned int len)
+{
+	unsigned int	i;
+
+	i = 0;
+	while (i < len)
+	{
+		if (0 == ft_memcmp((unsigned char *)arr + i * elem_size, elem, elem_size))
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int ft_parse_flags(t_fmt *fmt, char *str)
+{
+	static const t_flag s_flags[] = { MINUS, PLUS, ZERO, HASH, SPACE };
+	int	i;
+	int off;
+	int	flag_idx;
+
+	flag_idx = 0;
+	off = 0;
+	i = 0;
+	while (str[i])
+	{
+		if (ft_contains(s_flags, &(unsigned long){str[i]}, sizeof(t_flag), 5))
+		{
+			if (!ft_contains(fmt->flags, &(unsigned long){str[i]}, sizeof(t_flag), 5))
+				fmt->flags[flag_idx++] = str[i];
+			off++;
+		}
+		else
+			break ;
+		i++;
+	}
+	return (off);
+}
+
+int ft_parse_width(t_fmt *fmt, char *str)
+{
+	int i;
+
+	if (!ft_isdigit(str[0]))
+		return (0);
+	i = 0;
+	while (ft_isdigit(str[i]))
+		i++;
+	fmt->width = ft_atoi(str);
+	return (i);
+}
+
+int ft_parse_precision(t_fmt *fmt, char *str)
+{
+	int i;
+
+	if (str[0] != '.' || !ft_isdigit(str[1]))
+		return (0);
+	i = 1;
+	while (ft_isdigit(str[i]))
+		i++;
+	fmt->precision = ft_atoi(str + 1);
+	return (i);
+}
+
+t_fmt	ft_parse_fmt(char *str, int *offset)
+{
+	t_fmt					fmt;
+	int						off;
+
+	ft_bzero(&fmt, sizeof(fmt));
+	off = 1;
+	off += ft_parse_flags(&fmt, str + off);
+	off += ft_parse_width(&fmt, str + off);
+	off += ft_parse_precision(&fmt, str + off);
+	off += ft_parse_specifier(&fmt, str + off);
 	*offset += off;
 	return (fmt);
 }

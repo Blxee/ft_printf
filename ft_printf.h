@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 11:58:41 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/26 20:56:11 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,18 @@ typedef struct s_fmt t_fmt;
 
 typedef int	(*t_handler)(int fd, t_fmt, va_list *);
 
+typedef enum e_flag {
+	MINUS = '-',
+	PLUS = '+',
+	ZERO = '0',
+	HASH = '#',
+	SPACE = ' ',
+}	t_flag;
+
 typedef struct s_fmt {
-	// flags
-	// width
-	// precision
+	t_flag	flags[5];
+	int		width;
+	int		precision;
 	t_handler handler;
 }	t_fmt;
 
