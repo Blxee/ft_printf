@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/28 09:53:43 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/28 10:25:43 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ int		ft_inner_dprintf(int fd, const char *format, va_list *ap)
 		{
 			written += ft_putnstr_fd((char *)format + start, fd, len);
 			fmt = ft_parse_fmt((char *)format + start + len, &start);
+			if (start == -1)
+				return (-1);
 			written += fmt.handler(fd, fmt, ap);
 			start += len;
 			len = 0;
@@ -90,11 +92,11 @@ int ft_parse_specifier(t_fmt *fmt, char *str)
 		if (ident_keys[i] == *str)
 		{
 			fmt->handler = ident_vals[i];
-			break ;
+			return (1);
 		}
 		i++;
 	}
-	return (1);
+	return (0);
 }
 
 int ft_contains(const void *arr, const void *elem,
@@ -173,7 +175,12 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 	off += ft_parse_flags(&fmt, str + off);
 	off += ft_parse_width(&fmt, str + off);
 	off += ft_parse_precision(&fmt, str + off);
-	off += ft_parse_specifier(&fmt, str + off);
+	if (!ft_parse_specifier(&fmt, str + off))
+	{
+		*offset = -1;
+		return (fmt);
+	}
+	off += 1;
 	*offset += off;
 	return (fmt);
 }
