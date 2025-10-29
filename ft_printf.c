@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/28 10:25:43 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:39:27 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ int		ft_inner_dprintf(int fd, const char *format, va_list *ap)
 			fmt = ft_parse_fmt((char *)format + start + len, &start);
 			if (start == -1)
 				return (-1);
-			written += fmt.handler(fd, fmt, ap);
+			written += fmt.handler(fd, fmt, ap); // FIX: reutrn -1 if he handler's write fails
 			start += len;
 			len = 0;
 		}
@@ -185,6 +185,21 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 	return (fmt);
 }
 
+int		ft_intlen(long n)
+{
+	int len;
+
+	len = 0;
+	if (n < 0 || n == 0)
+		len++;
+	while (n)
+	{
+		n /= 10;
+		len++;
+	}
+	return (len);
+}
+
 int		ft_putlnbr_fd(long n, int fd)
 {
 	if (n < 0)
@@ -255,10 +270,22 @@ int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap)
 int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 {
 	int		nbr;
+	int		len;
+	int		written;
 
-	(void)fmt;
+	written = 0;
 	nbr = va_arg(*ap, int);
-	return (ft_putlnbr_fd(nbr, fd));
+	len = ft_intlen(nbr);
+	if (ft_contains(fmt.flags, &(t_flag){MINUS}, sizeof(t_flag), 5))
+		written += ft_putlnbr_fd(nbr, fd);
+	while (len < fmt.width)
+	{
+		written += write(fd, &(char){' '}, 1);
+		len++;
+	}
+	if (!ft_contains(fmt.flags, &(t_flag){MINUS}, sizeof(t_flag), 5))
+		written += ft_putlnbr_fd(nbr, fd);
+	return (written);
 }
 
 int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)

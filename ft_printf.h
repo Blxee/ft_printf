@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/26 20:56:11 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:37:40 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ int		ft_putnstr_fd(char *s, int fd, int n);
 t_fmt	ft_parse_fmt(char *str, int *offset);
 int		ft_puthex_fd(unsigned long n, int upper, int fd);
 int		ft_putlnbr_fd(long n, int fd);
+int		ft_intlen(long n);
 
 int		ft_print_char(int fd, t_fmt fmt, va_list *ap);
 int		ft_print_str(int fd, t_fmt fmt, va_list *ap);
