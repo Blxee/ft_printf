@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/29 14:37:40 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/30 08:48:50 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,32 @@
 # include <stdarg.h>
 # include "libft/libft.h"
 
-typedef struct s_fmt t_fmt;
+typedef struct s_fmt	t_fmt;
 
-typedef int	(*t_handler)(int fd, t_fmt, va_list *);
+typedef int				(*t_handler)(int fd, t_fmt, va_list *);
 
 typedef enum e_flag {
-	MINUS = '-',
-	PLUS = '+',
-	ZERO = '0',
-	HASH = '#',
-	SPACE = ' ',
+	MINUS,
+	PLUS,
+	ZERO,
+	HASH,
+	SPACE,
 }	t_flag;
 
 typedef struct s_fmt {
-	t_flag	flags[5];
-	int		width;
-	int		precision;
-	t_handler handler;
+	union {
+		int	flags[5];
+		struct {
+			int	minus;
+			int	plus;
+			int	zero;
+			int	hash;
+			int	space;
+		};
+	};
+	int			width;
+	int			precision;
+	t_handler	handler;
 }	t_fmt;
 
 int		ft_printf(const char *format, ...);

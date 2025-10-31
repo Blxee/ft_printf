@@ -6,32 +6,35 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/29 14:39:27 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/10/31 19:53:55 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include "libft/libft.h"
 
-int		ft_printf(const char *format, ...)
+int	ft_printf(const char *format, ...)
 {
-	va_list ap;
+	va_list	ap;
+
 	va_start(ap, format);
 	return (ft_inner_dprintf(1, format, &ap));
 }
 
-int		ft_dprintf(int fd, const char *format, ...)
+int	ft_dprintf(int fd, const char *format, ...)
 {
-	va_list ap;
+	va_list	ap;
+
 	va_start(ap, format);
 	return (ft_inner_dprintf(fd, format, &ap));
 }
 
-int		ft_inner_dprintf(int fd, const char *format, va_list *ap)
+int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
 {
 	t_fmt	fmt;
-	int start;
-	int len;
-	int written;
+	int		start;
+	int		len;
+	int		written;
 
 	if (format == NULL || fd < 0)
 		return (-1);
@@ -58,9 +61,9 @@ int		ft_inner_dprintf(int fd, const char *format, va_list *ap)
 	return (written);
 }
 
-int		ft_putnstr_fd(char *s, int fd, int n)
+int	ft_putnstr_fd(char *s, int fd, int n)
 {
-	int len;
+	int	len;
 
 	len = (int)ft_strlen(s);
 	if (n < 0)
@@ -70,7 +73,7 @@ int		ft_putnstr_fd(char *s, int fd, int n)
 	return (write(fd, s, n));
 }
 
-int ft_parse_specifier(t_fmt *fmt, char *str)
+int	ft_parse_specifier(t_fmt *fmt, char *str)
 {
 	static const char		*ident_keys = "cspdiuxX%";
 	static const t_handler	ident_vals[] = {
@@ -84,7 +87,7 @@ int ft_parse_specifier(t_fmt *fmt, char *str)
 		&ft_print_hex_upper,
 		&ft_print_percent,
 	};
-	int i;
+	int						i;
 
 	i = 0;
 	while (ident_keys[i] != '\0')
@@ -99,7 +102,7 @@ int ft_parse_specifier(t_fmt *fmt, char *str)
 	return (0);
 }
 
-int ft_contains(const void *arr, const void *elem,
+int	ft_contains(const void *arr, const void *elem,
 				unsigned int elem_size, unsigned int len)
 {
 	unsigned int	i;
@@ -107,29 +110,29 @@ int ft_contains(const void *arr, const void *elem,
 	i = 0;
 	while (i < len)
 	{
-		if (0 == ft_memcmp((unsigned char *)arr + i * elem_size, elem, elem_size))
+		if (0 == ft_memcmp((unsigned char *)arr + i * elem_size,
+				elem, elem_size))
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-int ft_parse_flags(t_fmt *fmt, char *str)
+int	ft_parse_flags(t_fmt *fmt, char *str)
 {
-	static const t_flag s_flags[] = { MINUS, PLUS, ZERO, HASH, SPACE };
-	int	i;
-	int off;
-	int	flag_idx;
+	static char	*flags = "-+0# ";
+	int			i;
+	char		*found;
+	int			off;
 
-	flag_idx = 0;
 	off = 0;
 	i = 0;
 	while (str[i])
 	{
-		if (ft_contains(s_flags, &(unsigned long){str[i]}, sizeof(t_flag), 5))
+		found = ft_strchr(flags, str[i]);
+		if (found)
 		{
-			if (!ft_contains(fmt->flags, &(unsigned long){str[i]}, sizeof(t_flag), 5))
-				fmt->flags[flag_idx++] = str[i];
+			fmt->flags[found - flags] = 1;
 			off++;
 		}
 		else
@@ -139,9 +142,9 @@ int ft_parse_flags(t_fmt *fmt, char *str)
 	return (off);
 }
 
-int ft_parse_width(t_fmt *fmt, char *str)
+int	ft_parse_width(t_fmt *fmt, char *str)
 {
-	int i;
+	int	i;
 
 	if (!ft_isdigit(str[0]))
 		return (0);
@@ -152,9 +155,9 @@ int ft_parse_width(t_fmt *fmt, char *str)
 	return (i);
 }
 
-int ft_parse_precision(t_fmt *fmt, char *str)
+int	ft_parse_precision(t_fmt *fmt, char *str)
 {
-	int i;
+	int	i;
 
 	if (str[0] != '.' || !ft_isdigit(str[1]))
 		return (0);
@@ -185,9 +188,9 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 	return (fmt);
 }
 
-int		ft_intlen(long n)
+int	ft_intlen(long n)
 {
-	int len;
+	int	len;
 
 	len = 0;
 	if (n < 0 || n == 0)
@@ -200,7 +203,7 @@ int		ft_intlen(long n)
 	return (len);
 }
 
-int		ft_putlnbr_fd(long n, int fd)
+int	ft_putlnbr_fd(long n, int fd)
 {
 	if (n < 0)
 		return (write(fd, &(char){'-'}, 1) + ft_putlnbr_fd(-n, fd));
@@ -276,14 +279,17 @@ int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 	written = 0;
 	nbr = va_arg(*ap, int);
 	len = ft_intlen(nbr);
-	if (ft_contains(fmt.flags, &(t_flag){MINUS}, sizeof(t_flag), 5))
+	if (fmt.minus)
 		written += ft_putlnbr_fd(nbr, fd);
 	while (len < fmt.width)
 	{
-		written += write(fd, &(char){' '}, 1);
+		if (fmt.zero && !fmt.minus)
+			written += write(fd, &(char){'0'}, 1);
+		else
+			written += write(fd, &(char){' '}, 1);
 		len++;
 	}
-	if (!ft_contains(fmt.flags, &(t_flag){MINUS}, sizeof(t_flag), 5))
+	if (!fmt.minus)
 		written += ft_putlnbr_fd(nbr, fd);
 	return (written);
 }
