@@ -6,27 +6,34 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/10/31 19:53:55 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/07 09:54:10 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 #include "libft/libft.h"
+#include <unistd.h>
 
 int	ft_printf(const char *format, ...)
 {
 	va_list	ap;
+	int		ret;
 
 	va_start(ap, format);
-	return (ft_inner_dprintf(1, format, &ap));
+	ret = ft_inner_dprintf(1, format, &ap);
+	va_end(ap);
+	return (ret);
 }
 
 int	ft_dprintf(int fd, const char *format, ...)
 {
 	va_list	ap;
+	int		ret;
 
 	va_start(ap, format);
-	return (ft_inner_dprintf(fd, format, &ap));
+	ret = ft_inner_dprintf(fd, format, &ap);
+	va_end(ap);
+	return (ret);
 }
 
 int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
@@ -57,7 +64,6 @@ int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
 			len++;
 	}
 	written += ft_putnstr_fd((char *)format + start, fd, -1);
-	va_end(*ap);
 	return (written);
 }
 
@@ -193,7 +199,7 @@ int	ft_intlen(long n)
 	int	len;
 
 	len = 0;
-	if (n < 0 || n == 0)
+	if (n == 0)
 		len++;
 	while (n)
 	{
@@ -206,7 +212,7 @@ int	ft_intlen(long n)
 int	ft_putlnbr_fd(long n, int fd)
 {
 	if (n < 0)
-		return (write(fd, &(char){'-'}, 1) + ft_putlnbr_fd(-n, fd));
+		return (ft_putlnbr_fd(-n, fd));
 	if (n / 10 > 0)
 		return (ft_putlnbr_fd(n / 10, fd) + write(fd, &(char){'0' + n % 10}, 1));
 	return (write(fd, &(char){'0' + n % 10}, 1));
@@ -270,27 +276,81 @@ int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap)
 	return (written);
 }
 
+int ft_apply_sign(int fd, t_fmt fmt, long nbr)
+{
+	if (fmt.plus && nbr >= 0)
+		return (write(fd, "+", 1));
+	else if (nbr < 0)
+		return (write(fd, "-", 1));
+	return (0);
+}
+
+int ft_apply_space(int fd, t_fmt fmt, long nbr)
+{
+	if (fmt.space && !fmt.plus && nbr >= 0)
+		return (write(fd, " ", 1));
+	return (0);
+}
+
+int ft_apply_precision(int fd, t_fmt fmt, int len)
+{
+	int written;
+
+	written = 0;
+	while (fmt.precision-- > len)
+		written += write(fd, "0", 1);
+	return (written);
+}
+
+int ft_pad_space_before(int fd, t_fmt fmt, int len)
+{
+	int written;
+
+	written = 0;
+	if (!fmt.minus && !fmt.zero)
+		while (fmt.width-- > len)
+			written += write(fd, " ", 1);
+	return (written);
+}
+
+int ft_pad_zero(int fd, t_fmt fmt, int len)
+{
+	int written;
+
+	written = 0;
+	while (!fmt.precision && !fmt.minus && fmt.zero && fmt.width-- > len)
+		written += write(fd, "0", 1);
+	return (written);
+}
+
+int ft_pad_space_after(int fd, t_fmt fmt, int len)
+{
+	int written;
+
+	written = 0;
+	if (fmt.minus)
+		while (fmt.width-- > len)
+			written += write(fd, " ", 1);
+	return (written);
+}
+
 int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 {
 	int		nbr;
 	int		len;
 	int		written;
 
+	(void)fmt;
 	written = 0;
 	nbr = va_arg(*ap, int);
 	len = ft_intlen(nbr);
-	if (fmt.minus)
-		written += ft_putlnbr_fd(nbr, fd);
-	while (len < fmt.width)
-	{
-		if (fmt.zero && !fmt.minus)
-			written += write(fd, &(char){'0'}, 1);
-		else
-			written += write(fd, &(char){' '}, 1);
-		len++;
-	}
-	if (!fmt.minus)
-		written += ft_putlnbr_fd(nbr, fd);
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_apply_sign(fd, fmt, nbr);
+	written += ft_apply_space(fd, fmt, nbr);
+	written += ft_apply_precision(fd, fmt, len);
+	written += ft_pad_zero(fd, fmt, len);
+	written += ft_putlnbr_fd(nbr, fd);
+	written += ft_pad_space_after(fd, fmt, written);
 	return (written);
 }
 
@@ -303,27 +363,47 @@ int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)
 	return (ft_putlnbr_fd(nbr, fd));
 }
 
+int ft_apply_hash(int fd, t_fmt fmt)
+{
+	if (fmt.hash)
+	{
+		if (fmt.handler == &ft_print_hex_lower)
+			return (write(fd, "0x", 2));
+		else
+			return (write(fd, "0X", 2));
+	}
+	return (0);
+}
+
 int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap)
 {
 	unsigned int nbr;
+	int written;
 
 	(void)fmt;
+	written = 0;
 	nbr = va_arg(*ap, unsigned int);
-	return (ft_puthex_fd(nbr, 0, fd));
+	written += ft_apply_hash(fd, fmt);
+	written += ft_puthex_fd(nbr, 0, fd);
+	return (written);
 }
 
 int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap)
 {
 	unsigned int nbr;
+	int written;
 
 	(void)fmt;
+	written = 0;
 	nbr = va_arg(*ap, unsigned int);
-	return (ft_puthex_fd(nbr, 1, fd));
+	written += ft_apply_hash(fd, fmt);
+	written += ft_puthex_fd(nbr, 1, fd);
+	return (written);
 }
 
 int		ft_print_percent(int fd, t_fmt fmt, va_list *ap)
 {
 	(void)fmt;
 	(void)ap;
-	return (write(fd, &(char){'%'}, 1));
+	return (write(fd, "%", 1));
 }
