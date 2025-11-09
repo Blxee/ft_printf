@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/07 09:54:10 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/09 09:42:24 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
 	int		len;
 	int		written;
 
-	if (format == NULL || fd < 0)
+	if (format == NULL || write(fd, NULL, 0) < 0)
 		return (-1);
 	written = 0;
 	start = 0;
@@ -165,6 +165,7 @@ int	ft_parse_precision(t_fmt *fmt, char *str)
 {
 	int	i;
 
+	fmt->precision = -1;
 	if (str[0] != '.' || !ft_isdigit(str[1]))
 		return (0);
 	i = 1;
@@ -209,6 +210,21 @@ int	ft_intlen(long n)
 	return (len);
 }
 
+int	ft_hexlen(unsigned long n)
+{
+	int	len;
+
+	len = 0;
+	if (n == 0)
+		len++;
+	while (n)
+	{
+		n /= 16;
+		len++;
+	}
+	return (len);
+}
+
 int	ft_putlnbr_fd(long n, int fd)
 {
 	if (n < 0)
@@ -235,44 +251,56 @@ int		ft_puthex_fd(unsigned long n, int upper, int fd)
 int		ft_print_char(int fd, t_fmt fmt, va_list *ap)
 {
 	char	chr;
+	int written;
 
-	(void)fmt;
+	written = 0;
 	chr = (char)va_arg(*ap, int);
-	return (write(fd, &chr, 1));
+	written += ft_pad_space_before(fd, fmt, 1);
+	written += write(fd, &chr, 1);
+	written += ft_pad_space_after(fd, fmt, 1);
+	return (written);
 }
 
 int		ft_print_str(int fd, t_fmt fmt, va_list *ap)
 {
 	char	*str;
 	int written;
+	size_t len;
 
 	(void)fmt;
 	str = va_arg(*ap, char *);
 	written = 0;
 	if (str == NULL)
-	{
-		written = ft_putnstr_fd("(null)", fd, -1);
-		return (written);
-	}
-	written += ft_putnstr_fd(str, fd, -1);
+		return (ft_putnstr_fd("(null)", fd, -1));
+	len = ft_strlen(str);
+	if (fmt.precision >= 0 && (size_t)fmt.precision < len)
+		len = fmt.precision;
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_putnstr_fd(str, fd, len);
+	written += ft_pad_space_after(fd, fmt, written);
 	return (written);
 }
 
 int		ft_print_pointer(int fd, t_fmt fmt, va_list *ap)
 {
-	void *p;
+	size_t p;
 	int written;
+	int len;
 
-	(void)fmt;
-	p = va_arg(*ap, void *);
+	p = (size_t)va_arg(*ap, void *);
 	written = 0;
-	if (p == NULL)
+	if (p == 0)
 	{
 		written += ft_putnstr_fd("(nil)", fd, -1);
 		return (written);
 	}
+	len = ft_hexlen(p) + fmt.hash * 2;
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_apply_sign(fd, fmt, 1);
+	written += ft_apply_space(fd, fmt, 1);
 	written += ft_putnstr_fd("0x", fd, -1);
-	written += ft_puthex_fd((unsigned long)p, 0, fd);
+	written += ft_puthex_fd(p, 0, fd);
+	written += ft_pad_space_after(fd, fmt, len);
 	return (written);
 }
 
@@ -306,10 +334,17 @@ int ft_pad_space_before(int fd, t_fmt fmt, int len)
 {
 	int written;
 
+	if (fmt.minus)
+		return (0);
+	if (fmt.handler == &ft_print_decimal
+		|| fmt.handler == &ft_print_unsigned
+		|| fmt.handler == &ft_print_hex_lower
+		|| fmt.handler == &ft_print_hex_upper)
+		if (fmt.zero)
+			return (0);
 	written = 0;
-	if (!fmt.minus && !fmt.zero)
-		while (fmt.width-- > len)
-			written += write(fd, " ", 1);
+	while (fmt.width-- > len)
+		written += write(fd, " ", 1);
 	return (written);
 }
 
@@ -318,7 +353,7 @@ int ft_pad_zero(int fd, t_fmt fmt, int len)
 	int written;
 
 	written = 0;
-	while (!fmt.precision && !fmt.minus && fmt.zero && fmt.width-- > len)
+	while (fmt.precision == -1 && !fmt.minus && fmt.zero && fmt.width-- > len)
 		written += write(fd, "0", 1);
 	return (written);
 }
@@ -343,11 +378,11 @@ int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 	(void)fmt;
 	written = 0;
 	nbr = va_arg(*ap, int);
-	len = ft_intlen(nbr);
+	len = ft_intlen(nbr) + fmt.plus + (int)(nbr < 0);
 	written += ft_pad_space_before(fd, fmt, len);
 	written += ft_apply_sign(fd, fmt, nbr);
 	written += ft_apply_space(fd, fmt, nbr);
-	written += ft_apply_precision(fd, fmt, len);
+	written += ft_apply_precision(fd, fmt, ft_intlen(nbr));
 	written += ft_pad_zero(fd, fmt, len);
 	written += ft_putlnbr_fd(nbr, fd);
 	written += ft_pad_space_after(fd, fmt, written);
