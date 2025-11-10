@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/09 09:42:24 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/10 08:14:33 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -375,10 +375,14 @@ int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 	int		len;
 	int		written;
 
-	(void)fmt;
 	written = 0;
 	nbr = va_arg(*ap, int);
-	len = ft_intlen(nbr) + fmt.plus + (int)(nbr < 0);
+	if (fmt.precision == 0 && nbr == 0)
+		return (0);
+	len = ft_intlen(nbr);
+	if (fmt.precision > len)
+		len = fmt.precision;
+	len += (int)(fmt.plus || fmt.space || (nbr < 0));
 	written += ft_pad_space_before(fd, fmt, len);
 	written += ft_apply_sign(fd, fmt, nbr);
 	written += ft_apply_space(fd, fmt, nbr);
@@ -391,16 +395,28 @@ int		ft_print_decimal(int fd, t_fmt fmt, va_list *ap)
 
 int		ft_print_unsigned(int fd, t_fmt fmt, va_list *ap)
 {
-	unsigned int	nbr;
+	unsigned int		nbr;
+	int		len;
+	int		written;
 
-	(void)fmt;
-	nbr = va_arg(*ap, unsigned int);
-	return (ft_putlnbr_fd(nbr, fd));
+	written = 0;
+	nbr = va_arg(*ap, int);
+	if (fmt.precision == 0 && nbr == 0)
+		return (0);
+	len = ft_intlen(nbr);
+	if (fmt.precision > len)
+		len = fmt.precision;
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_apply_precision(fd, fmt, ft_intlen(nbr));
+	written += ft_pad_zero(fd, fmt, len);
+	written += ft_putlnbr_fd(nbr, fd);
+	written += ft_pad_space_after(fd, fmt, written);
+	return (written);
 }
 
-int ft_apply_hash(int fd, t_fmt fmt)
+int ft_apply_hash(int fd, t_fmt fmt, unsigned long nbr)
 {
-	if (fmt.hash)
+	if (fmt.hash && nbr != 0)
 	{
 		if (fmt.handler == &ft_print_hex_lower)
 			return (write(fd, "0x", 2));
@@ -413,26 +429,46 @@ int ft_apply_hash(int fd, t_fmt fmt)
 int		ft_print_hex_lower(int fd, t_fmt fmt, va_list *ap)
 {
 	unsigned int nbr;
+	int len;
 	int written;
 
 	(void)fmt;
 	written = 0;
 	nbr = va_arg(*ap, unsigned int);
-	written += ft_apply_hash(fd, fmt);
+	if (fmt.precision == 0 && nbr == 0)
+		return (0);
+	len = ft_hexlen((unsigned long)nbr);
+	if (fmt.precision > len)
+		len = fmt.precision;
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_apply_hash(fd, fmt, (unsigned long)nbr);
+	written += ft_apply_precision(fd, fmt, ft_hexlen((unsigned long)nbr));
+	written += ft_pad_zero(fd, fmt, len);
 	written += ft_puthex_fd(nbr, 0, fd);
+	written += ft_pad_space_after(fd, fmt, written);
 	return (written);
 }
 
 int		ft_print_hex_upper(int fd, t_fmt fmt, va_list *ap)
 {
 	unsigned int nbr;
+	int len;
 	int written;
 
 	(void)fmt;
 	written = 0;
 	nbr = va_arg(*ap, unsigned int);
-	written += ft_apply_hash(fd, fmt);
+	if (fmt.precision == 0 && nbr == 0)
+		return (0);
+	len = ft_hexlen((unsigned long)nbr);
+	if (fmt.precision > len)
+		len = fmt.precision;
+	written += ft_pad_space_before(fd, fmt, len);
+	written += ft_apply_hash(fd, fmt, (unsigned long)nbr);
+	written += ft_apply_precision(fd, fmt, ft_hexlen((unsigned long)nbr));
+	written += ft_pad_zero(fd, fmt, len);
 	written += ft_puthex_fd(nbr, 1, fd);
+	written += ft_pad_space_after(fd, fmt, written);
 	return (written);
 }
 
