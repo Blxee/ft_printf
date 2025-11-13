@@ -6,46 +6,55 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/13 07:54:04 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/13 08:27:07 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
+static void	ft_handle_format(t_fields *fields)
+{
+	fields->written += ft_putnstr_fd((char *)fields->format + fields->start,
+			fields->fd, fields->len);
+	fields->fmt = ft_parse_fmt((char *)fields->format
+			+ fields->start + fields->len, &fields->start);
+	if (fields->fmt.handler == NULL)
+	{
+		fields->written += write(fields->fd, "%", 1);
+		fields->len++;
+	}
+	else
+		fields->written += fields->fmt.handler(fields->fd,
+				fields->fmt, fields->ap);
+	fields->start += fields->len;
+	fields->len = 0;
+}
+
 static int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
 {
-	t_fmt	fmt;
-	int		start;
-	int		len;
-	int		written;
+	t_fields	fields;
 
 	if (format == NULL || write(fd, NULL, 0) < 0)
 		return (-1);
-	written = 0;
-	start = 0;
-	len = 0;
-	while (format[start + len] != '\0')
+	fields.format = format;
+	fields.written = 0;
+	fields.start = 0;
+	fields.len = 0;
+	fields.ap = ap;
+	fields.fd = fd;
+	while (format[fields.start + fields.len] != '\0')
 	{
-		if (format[start + len] == '%')
+		if (format[fields.start + fields.len] == '%')
 		{
-			if (format[start + len + 1] == '\0')
+			if (format[fields.start + fields.len + 1] == '\0')
 				return (-1);
-			written += ft_putnstr_fd((char *)format + start, fd, len);
-			fmt = ft_parse_fmt((char *)format + start + len, &start);
-			if (fmt.handler == NULL)
-			{
-				written += write(fd, "%", 1);
-				len++;
-			}
-			else
-				written += fmt.handler(fd, fmt, ap);
-			start += len;
-			len = 0;
+			ft_handle_format(&fields);
 		}
 		else
-			len++;
+			fields.len++;
 	}
-	return (written += ft_putnstr_fd((char *)format + start, fd, -1), written);
+	fields.written += ft_putnstr_fd((char *)format + fields.start, fd, -1);
+	return (fields.written);
 }
 
 int	ft_printf(const char *format, ...)

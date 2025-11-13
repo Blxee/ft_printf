@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:21:17 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/11 10:00:45 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/13 08:26:40 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,16 @@ typedef struct s_fmt {
 	int			precision;
 	t_handler	handler;
 }	t_fmt;
+
+typedef struct s_fields {
+	int			fd;
+	const char	*format;
+	va_list		*ap;
+	t_fmt		fmt;
+	int			start;
+	int			len;
+	int			written;
+}	t_fields;
 
 int			ft_printf(const char *format, ...);
 int			ft_dprintf(int fd, const char *format, ...);
