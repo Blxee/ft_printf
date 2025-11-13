@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/11 09:31:03 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/11 09:31:05 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/12 08:39:46 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,7 @@ t_fmt	ft_parse_fmt(char *str, int *offset)
 	off += ft_parse_width(&fmt, str + off);
 	off += ft_parse_precision(&fmt, str + off);
 	if (!ft_parse_specifier(&fmt, str + off))
-	{
-		*offset = -1;
 		return (fmt);
-	}
 	off += 1;
 	*offset += off;
 	return (fmt);

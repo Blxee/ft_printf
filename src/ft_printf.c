@@ -6,7 +6,7 @@
 /*   By: atahiri- <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 08:20:41 by atahiri-          #+#    #+#             */
-/*   Updated: 2025/11/11 10:00:07 by atahiri-         ###   ########.fr       */
+/*   Updated: 2025/11/13 07:54:04 by atahiri-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,17 @@ static int	ft_inner_dprintf(int fd, const char *format, va_list *ap)
 	{
 		if (format[start + len] == '%')
 		{
+			if (format[start + len + 1] == '\0')
+				return (-1);
 			written += ft_putnstr_fd((char *)format + start, fd, len);
 			fmt = ft_parse_fmt((char *)format + start + len, &start);
-			if (start == -1)
-				return (-1);
-			written += fmt.handler(fd, fmt, ap);
+			if (fmt.handler == NULL)
+			{
+				written += write(fd, "%", 1);
+				len++;
+			}
+			else
+				written += fmt.handler(fd, fmt, ap);
 			start += len;
 			len = 0;
 		}
