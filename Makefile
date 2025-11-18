@@ -18,6 +18,8 @@ $(NAME): $(LIBFT) $(OBJS)
 	cp $(LIBFT) $(NAME)
 	ar -rcs $@ $(OBJS)
 
+bonus: $(NAME)
+
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
@@ -36,4 +38,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re bonus
